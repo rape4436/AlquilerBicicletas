@@ -1,5 +1,6 @@
 package com.rances.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.Query;
@@ -8,14 +9,14 @@ import org.springframework.stereotype.Service;
 
 import com.rances.util.HibernateUtil;
 import com.rances.util.Precios;
+import com.rances.util.TipoAlquiler;
 import com.rances.entity.Alquiler;
 import com.rances.service.IAlquilerRepository;
 
 @Service
 public class AlquilerRepository implements IAlquilerRepository {
 
-	Precios precios = new Precios();
-	
+	private ArrayList<Alquiler> alquileres = new ArrayList<Alquiler>();
 
 	@Override
 	public long count() {
@@ -136,8 +137,6 @@ public class AlquilerRepository implements IAlquilerRepository {
 			Session session = HibernateUtil.getSessionFactory().openSession();
 			session.beginTransaction();
 
-			calcularOperacion(alquiler);
-
 			session.save(alquiler);
 
 			session.getTransaction().commit();
@@ -147,85 +146,34 @@ public class AlquilerRepository implements IAlquilerRepository {
 		return false;
 	}
 
-	public void calcularOperacion(Alquiler alquiler) {
+	
+	public boolean getBeneficio(Alquiler alquiler) {
 		
 		
-		// TODO Auto-generated method stub
+		int count = 1;
 		
+		
+		for (Alquiler alquiler2 : alquileres) {
 
-		// calculo de alquiler, se calcula mediante el codigo seleccionado en un
-		// combo Tipo de Alquiler de la vista
-
-		// SI EL ALQUILER ES POR HORA
-		if (alquiler.getCodTipoAlquiler() == "1") {
-
-			alquilerPorHora(alquiler);
-
-		}
-		// SI EL ALQUILER ES POR DIA
-		else if (alquiler.getCodTipoAlquiler() == "2") {
-
-			alquilerPorDia(alquiler);
-		}
-		// SI EL ALQUILER ES POR SEMANA
-		else if (alquiler.getCodTipoAlquiler() == "3") {
-
-			alquilerPorSemana(alquiler);
-
-		} else {
-
-			alquiler.setTotal(0);
-		}
-
-		// calculo de promocion
-
-		if (alquiler.getCantidad() >= 3 && alquiler.getCantidad() <= 5) {
+			if (alquiler2.getCliente().getCodCliente().equals(alquiler.getCliente().getCodCliente())) {
+				
+				count++;
+				
+			}
 			
-			calcularPromocion(alquiler);
-
 		}
+		
+		if (count >= 3 &&  count <= 5)  {
+			
+			return true;
+		} 
+		
+		
+		return false;
+   
 
 	}
 
-	public void calcularPromocion(Alquiler alquiler) {
-		// TODO Auto-generated method stub
-
-		alquiler.setTotal(alquiler.getTotal() * Precios.getRentaFamiliar()/100);
-
-	}
-
-	public void alquilerPorSemana(Alquiler alquiler) {
-		// TODO Auto-generated method stub
-
-		Double sumatoria = (double) 0;
-
-		sumatoria = (alquiler.getTiempo() * Precios.getSemana());
-
-		alquiler.setTotal(sumatoria * alquiler.getCantidad());
-
-	}
-
-	public void alquilerPorDia(Alquiler alquiler) {
-		// TODO Auto-generated method stub
-
-		Double sumatoria = (double) 0;
-
-		sumatoria = (alquiler.getTiempo() * Precios.getDia());
-
-		alquiler.setTotal(sumatoria * alquiler.getCantidad());
-
-	}
-
-	public void alquilerPorHora(Alquiler alquiler) {
-		// TODO Auto-generated method stub
-
-		Double sumatoria = (double) 0;
-
-		sumatoria = (alquiler.getTiempo() * Precios.getHora());
-
-		alquiler.setTotal(sumatoria * alquiler.getCantidad());
-
-	}
 
 	@Override
 	public void updateSolicitud(Alquiler alquiler) {
@@ -236,7 +184,6 @@ public class AlquilerRepository implements IAlquilerRepository {
 			session.beginTransaction();
 			Query query = session
 					.createQuery("update com.rances.entity.Alquiler cantidad = :cantidad, fec_alta = :fec_alta, fec_baja = :fec_baja, observaciones = :observaciones, cod_tipo_alquiler = :cod_tipo_alquiler, tiempo = :tiempo, total = :total where cod_alquiler = :cod_alquiler");
-			query.setParameter("cantidad", alquiler.getCantidad());
 			query.setParameter("fec_alta", alquiler.getFecAlta());
 			query.setParameter("fec_baja", alquiler.getFecBaja());
 			query.setParameter("observaciones", alquiler.getObservaciones());
@@ -264,6 +211,30 @@ public class AlquilerRepository implements IAlquilerRepository {
 		query.executeUpdate();
 		session.getTransaction().commit();
 
+	}
+
+	public ArrayList<Alquiler> getAlquileres() {
+		return alquileres;
+	}
+
+	@SuppressWarnings("static-access")
+	public void setAlquileres(Alquiler alquiler) {
+
+
+        TipoAlquiler tipo =TipoAlquiler.valueOf(alquiler.getCodTipoAlquiler());
+        
+		if (getBeneficio(alquiler)){
+			
+			alquiler.setTotal(alquiler.getTiempo() * tipo.getTipo());
+			
+			alquiler.setTotal(alquiler.getTotal() * Precios.getRentaFamiliar()/100);
+			
+		} else {
+			
+			alquiler.setTotal(alquiler.getTiempo() * tipo.getTipo());
+		}
+
+		this.alquileres.add(alquiler);
 	}
 
 }

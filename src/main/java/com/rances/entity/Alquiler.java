@@ -22,9 +22,6 @@ public class Alquiler {
 	@Id
 	@Column(name = "COD_ALQUILER")
 	private Long codAlquiler;
-	
-	@Column(name = "CANTIDAD")
-	private int cantidad;
 
 	@Column(name = "FEC_ALTA")
 	private Date fecAlta;
@@ -44,12 +41,6 @@ public class Alquiler {
 	@Column(name = "TOTAL")
 	private double total;
 	
-	
-	@ManyToMany
-	@JoinTable(name="ALQ_PRO", joinColumns=@JoinColumn(name="COD_ALQ", referencedColumnName="ID"),
-	           inverseJoinColumns=@JoinColumn(name="COD_PRO", referencedColumnName="ID"))
-
-	
 	@ManyToOne
 	@JoinColumn(name="COD_CLIENTE")
 	private Cliente cliente;
@@ -57,30 +48,20 @@ public class Alquiler {
 	
 	
 	
-	public Alquiler(Long codAlquiler, int cantidad, Date fecAlta, Date fecBaja,
-			String observaciones, String codTipoAlquiler, int tiempo,
-			double total, Cliente cliente) {
-		super();
+	public Alquiler(Long codAlquiler, Date fecAlta, Date fecBaja,
+			String observaciones, String codTipoAlquiler, int tiempo, Cliente cliente) {
+	
 		this.codAlquiler = codAlquiler;
-		this.cantidad = cantidad;
 		this.fecAlta = fecAlta;
 		this.fecBaja = fecBaja;
 		this.observaciones = observaciones;
 		this.codTipoAlquiler = codTipoAlquiler;
 		this.tiempo = tiempo;
-		this.total = total;
 		this.cliente = cliente;
-	}
-
+		
 	
-
-	public Alquiler() {
-		super();
 	}
-
-
-
-
+    
 
 	public Long getCodAlquiler() {
 		return codAlquiler;
@@ -143,21 +124,6 @@ public class Alquiler {
 	public void setCliente(Cliente cliente) {
 		this.cliente = cliente;
 	}
-
-
-
-
-	public int getCantidad() {
-		return cantidad;
-	}
-
-
-
-
-	public void setCantidad(int cantidad) {
-		this.cantidad = cantidad;
-	}
-
 
 
 
